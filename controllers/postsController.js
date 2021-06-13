@@ -21,7 +21,8 @@ const getContactsById = async (req, res, next) => {
 
 	try {
 		const contact = await getContactById(id);
-		if (!contact) {
+
+		if (contact.length === 0) {
 			return res.status(404).json({ message: 'Not found' });
 		}
 		res.status(200).json({ contact, status: 'success' });
@@ -33,9 +34,9 @@ const getContactsById = async (req, res, next) => {
 const addContacts = async (req, res, next) => {
 	const { body } = req;
 	try {
-		const allContacts = await addContact(body);
+		const newContact = await addContact(body);
 
-		res.status(200).json({ allContacts, status: 'success' });
+		res.status(201).json({ newContact, status: 'success' });
 	} catch (error) {
 		next(error);
 	}
@@ -49,7 +50,7 @@ const removeContacts = async (req, res, next) => {
 		if (!contacts) {
 			return res.status(404).json({ message: 'Not found' });
 		}
-		res.status(200).json({ contacts, status: 'success' });
+		res.status(201).json({ contacts, message: 'contact deleted' });
 	} catch (error) {
 		next(error);
 	}

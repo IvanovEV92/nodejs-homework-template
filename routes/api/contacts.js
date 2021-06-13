@@ -15,7 +15,7 @@ const {
 
 router.get('/', getContacts);
 router.get('/:contactId', getContactsById);
-router.post('/', addContacts);
+router.post('/', addPostValidation, addContacts);
 router.patch('/:contactId', patchPostValidation, updateContacts);
 router.delete('/:contactId', removeContacts);
 

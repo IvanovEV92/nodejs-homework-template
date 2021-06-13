@@ -20,7 +20,6 @@ const getContactById = async contactId => {
 		const contact = parsContacts.filter(
 			contact => Number(contact.id) === Number(contactId),
 		);
-
 		return contact;
 	} catch (error) {
 		console.error(error.message);
@@ -45,7 +44,7 @@ const addContact = async body => {
 
 		await fs.writeFile(contacts, JSON.stringify(newContacts, null, 2));
 
-		return newContacts;
+		return newContact;
 	} catch (error) {
 		console.error(error.message);
 	}
