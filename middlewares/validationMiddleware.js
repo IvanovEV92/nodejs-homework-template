@@ -8,6 +8,7 @@ module.exports = {
 			phone: Joi.string()
 				.pattern(/^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)?$/)
 				.required(),
+			favorite: Joi.boolean().optional(),
 		});
 
 		const validationResult = schema.validate(req.body);
@@ -25,6 +26,31 @@ module.exports = {
 			phone: Joi.string()
 				.pattern(/^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)?$/)
 				.optional(),
+			favorite: Joi.boolean().optional(),
+		});
+
+		const validationResult = schema.validate(req.body);
+		if (validationResult.error) {
+			return res.status(400).json({ status: validationResult.error.details });
+		}
+
+		next();
+	},
+	schemaUpdateContactStatus: (req, res, next) => {
+		const schema = Joi.object({
+			favorite: Joi.boolean().optional(),
+		});
+
+		const validationResult = schema.validate(req.body);
+		if (validationResult.error) {
+			return res.status(400).json({ status: validationResult.error.details });
+		}
+
+		next();
+	},
+	schemaId: (req, res, next) => {
+		const schema = Joi.object({
+			contactId: Joi.objectId(),
 		});
 
 		const validationResult = schema.validate(req.body);
