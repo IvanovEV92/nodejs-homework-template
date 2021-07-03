@@ -1,10 +1,22 @@
+const fs = require('fs').promises;
+const path = require('path');
+const Jimp = require('jimp');
+const fsExtra = require('fs-extra');
+
 const { login, logout } = require('../services/authService');
 const {
 	createUser,
 	findUserById,
 	findUserByEmail,
 	updateSubscription,
+	updateAvatar,
 } = require('../services/userService');
+
+const AVATARS_DIR = path.join(
+	process.cwd(),
+	process.env.PUBLIC_DIR,
+	process.env.USERS_AVATARS,
+); // Директория с аватарами
 
 // Регистрация юзера
 const regController = async (req, res) => {
@@ -14,8 +26,8 @@ const regController = async (req, res) => {
 		return res.status(409).json({ message: 'Email in use' });
 	}
 
-	const { email, subscription } = await createUser(req.body);
-	res.status(201).json({ user: { email, subscription } });
+	const { email, subscription, avatarURL } = await createUser(req.body);
+	res.status(201).json({ user: { email, subscription, avatarURL } });
 };
 
 // Вход юзера
@@ -24,8 +36,12 @@ const loginController = async (req, res) => {
 	console.log(token);
 
 	if (token) {
-		const { email, subscription } = await findUserByEmail(req.body.email);
-		return res.status(200).json({ token, user: { email, subscription } });
+		const { email, subscription, avatarURL } = await findUserByEmail(
+			req.body.email,
+		);
+		return res
+			.status(200)
+			.json({ token, user: { email, subscription, avatarURL } });
 	}
 
 	res.status(401).json({ message: 'Email or password is wrong' });
@@ -42,8 +58,8 @@ const currentUserController = async (req, res) => {
 	const currentUser = await findUserById(req.user.id);
 
 	if (currentUser) {
-		const { email, subscription } = currentUser;
-		res.status(200).json({ email, subscription });
+		const { email, subscription, avatarURL } = currentUser;
+		res.status(200).json({ email, subscription, avatarURL });
 	}
 };
 
@@ -57,10 +73,42 @@ const subscriptionController = async (req, res) => {
 	}
 };
 
+// Обрабатывает аватар юзера (кроп + ресайз + качество + перезапись)
+const normalizeAvatar = async filePath => {
+	const img = await Jimp.read(filePath);
+	await img
+		.autocrop()
+		.cover(250, 250, Jimp.HORIZONTAL_ALIGN_CENTER || Jimp.VERTICAL_ALIGN_MIDDLE)
+		.quality(75)
+		.writeAsync(filePath);
+};
+
+// Контроллер аватара юзера
+const avatarController = async (req, res) => {
+	const filePath = req.file.path;
+	const fileName = req.file.filename;
+
+	if (req.file) {
+		await fsExtra.emptyDirSync(AVATARS_DIR);
+
+		await normalizeAvatar(filePath); // Обрабатывает картинку
+		console.log(AVATARS_DIR);
+		await fs.rename(filePath, path.join(AVATARS_DIR, fileName)); // Переносит картинку в папку с аватарами
+
+		const newAvatarUrl = `${req.protocol}://${req.headers.host}/${process.env.USERS_AVATARS}/${fileName}`; // Ссылка на новый аватар
+
+		const url = await updateAvatar(req.user.id, newAvatarUrl);
+		return res.status(200).json({ avatarURL: url });
+	}
+
+	res.status(400).json({ message: 'Please, provide a valid file' });
+};
+
 module.exports = {
 	regController,
 	loginController,
 	logoutController,
 	currentUserController,
 	subscriptionController,
+	avatarController,
 };
