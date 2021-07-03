@@ -1,5 +1,3 @@
-const Contacts = require('../schemas/contactModel');
-
 const {
 	getContacts,
 	getContactById,
@@ -9,36 +7,32 @@ const {
 	removeContact,
 } = require('../services/contactsService');
 
-const getContactsController = async (req, res, next) => {
-	const contacts = await getContacts();
+const getContactsController = async (req, res) => {
+	const contacts = await getContacts(req.user.id, req.query);
 	res.status(200).json({ contacts, status: 'success' });
 };
 
 const getContactsByIdController = async (req, res, next) => {
 	const { contactId: id } = req.params;
-	const contact = await getContactById(id);
-
+	const contact = await getContactById(req.user.id, id);
 	if (!contact) {
 		return res.status(404).json({ message: 'Not found' });
 	}
-
 	res.status(200).json({ contact, status: 'success' });
 };
 
 const addContactsController = async (req, res, next) => {
-	const contact = await addContact(req.body);
+	const contact = await addContact(req.user.id, req.body);
 	res.status(201).json({ contact, status: 'success' });
 };
 
 const updateContactsController = async (req, res, next) => {
 	const { contactId: id } = req.params;
 	const { body } = req;
-	const newContact = await updateContact(id, body);
-
+	const newContact = await updateContact(req.user.id, id, body);
 	if (!newContact) {
 		return res.status(404).json({ message: 'Not found' });
 	}
-
 	res.status(200).json({ newContact, status: 'success' });
 };
 
@@ -47,25 +41,19 @@ const updateContactStatusController = async (req, res) => {
 	const {
 		body: { favorite },
 	} = req;
-	console.log(favorite);
-	const newContact = await updateContactStatus(id, favorite);
-
+	const newContact = await updateContactStatus(req.user.id, id, favorite);
 	if (!newContact) {
 		return res.status(404).json({ message: 'Not found' });
 	}
-
 	res.status(200).json({ newContact, status: 'success' });
 };
 
 const removeContactsController = async (req, res, next) => {
 	const { contactId: id } = req.params;
-
-	const result = await removeContact(id);
-
+	const result = await removeContact(req.user.id, id);
 	if (!result) {
 		return res.status(404).json({ message: 'Not found' });
 	}
-
 	res.status(200).json({ message: 'contact deleted' });
 };
 

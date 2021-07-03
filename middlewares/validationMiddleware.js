@@ -1,9 +1,10 @@
 const Joi = require('joi');
+Joi.objectId = require('joi-objectid')(Joi);
 
 module.exports = {
 	addPostValidation: (req, res, next) => {
 		const schema = Joi.object({
-			name: Joi.string().alphanum().min(2).max(30).required(),
+			name: Joi.string().min(2).max(30).required(),
 			email: Joi.string().email({ minDomainSegments: 2 }).required(),
 			phone: Joi.string()
 				.pattern(/^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)?$/)
