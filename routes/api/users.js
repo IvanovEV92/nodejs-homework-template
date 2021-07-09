@@ -7,6 +7,7 @@ const {
 	logoutController,
 	currentUserController,
 	subscriptionController,
+	avatarController,
 } = require('../../controllers/usersController'); // Контроллеры маршрутов
 
 const {
@@ -16,6 +17,7 @@ const {
 
 const { protect } = require('../../middlewares/authProtect'); // Мидлвар на аутентификацию
 const { asyncWrapper } = require('../../helpers/apiHelpers'); // Мидлвар универсального обработчика try catch
+const upload = require('../../helpers/upload'); // Обработчик загрузок
 
 router.post('/signup', regLogValidation, asyncWrapper(regController)); // Роут для регистрации юзера
 router.post('/login', regLogValidation, asyncWrapper(loginController)); // Роут для входа юзера
@@ -27,5 +29,11 @@ router.patch(
 	subscriptionValidation,
 	asyncWrapper(subscriptionController),
 ); // Роут для обновления статуса
+router.patch(
+	'/avatars',
+	protect,
+	upload.single('avatar'),
+	asyncWrapper(avatarController),
+); // Обновление аватара
 
 module.exports = router;

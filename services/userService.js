@@ -33,10 +33,22 @@ const updateSubscription = async (id, subscription) => {
 	return user;
 };
 
+//  Обновляет аватар юзера - удалить старый аватар!!!
+const updateAvatar = async (id, url) => {
+	const { avatarURL } = await User.findOneAndUpdate(
+		{ _id: id },
+		{ avatarURL: url },
+		{ new: true },
+	); // Обновляет аватар в базе
+
+	return avatarURL;
+};
+
 module.exports = {
 	findUserById,
 	findUserByEmail,
 	createUser,
 	updateToken,
 	updateSubscription,
+	updateAvatar,
 };
