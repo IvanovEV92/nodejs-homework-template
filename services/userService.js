@@ -1,9 +1,36 @@
 const User = require('../schemas/authModel');
+const { nanoid } = require('nanoid');
+const { sendEmail } = require('./emailService');
 
 // Создает нового юзера в базе
+
 const createUser = async body => {
-	const user = await new User(body);
+	const verifyToken = nanoid();
+	const { email } = body;
+
+	await sendEmail(verifyToken, email);
+
+	const user = await new User({ ...body, verifyToken });
 	return user.save();
+};
+// Верифицирует юзера
+const verify = async token => {
+	const user = await User.findOne({ verifyToken: token });
+
+	if (user) {
+		await user.updateOne({ verify: true, verifyToken: null });
+		return true;
+	}
+};
+
+// Повторно верифицирует юзера
+const reVerify = async email => {
+	const user = await User.findOne({ email, verify: false });
+
+	if (user) {
+		await sendEmail(user.verifyToken, email);
+		return true;
+	}
 };
 
 // Находит юзера в базе по id
@@ -33,7 +60,6 @@ const updateSubscription = async (id, subscription) => {
 	return user;
 };
 
-//  Обновляет аватар юзера - удалить старый аватар!!!
 const updateAvatar = async (id, url) => {
 	const { avatarURL } = await User.findOneAndUpdate(
 		{ _id: id },
@@ -51,4 +77,6 @@ module.exports = {
 	updateToken,
 	updateSubscription,
 	updateAvatar,
+	verify,
+	reVerify,
 };

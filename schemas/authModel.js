@@ -30,22 +30,27 @@ const userSchema = new Schema({
 			return gravatar.url(this.email, { s: '250' }, true);
 		},
 	},
+	verify: {
+		type: Boolean,
+		default: false,
+	},
+	verifyToken: {
+		type: String,
+		required: [true, 'Verify token is required'],
+	},
 });
 
-// Хук, хеширует и солит пароль перед сохранением в базу
 userSchema.pre('save', async function () {
 	if (this.isNew) {
 		this.password = await bcrypt.hash(this.password, 9);
 	}
 });
 
-// Сравнивает пароли при входе юзера (возвращает null если не совпадают)
 userSchema.methods.validPassword = async function (password) {
 	const result = await bcrypt.compare(password, this.password);
 	return result;
 };
 
-// Валидация email в схеме
 userSchema.path('email').validate(function (value) {
 	const emailRegEx =
 		/^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
