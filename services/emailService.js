@@ -38,13 +38,13 @@ const sendEmail = async (verifyToken, email) => {
 	const transporter = nodemailer.createTransport({
 		service: 'gmail',
 		auth: {
-			user: 'ivanov191192@gmail.com',
-			pass: 'pipisco191192',
+			user: 'ivanov191192@ukr.net',
+			pass: process.env.PASS,
 		},
 	});
 
 	const mailOptions = {
-		from: 'ivanov191192@gmail.com',
+		from: 'ivanov191192@ukr.net',
 		to: email,
 		subject: 'Please confirm your email',
 		html: emailBody,
